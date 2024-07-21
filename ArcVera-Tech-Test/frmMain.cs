@@ -20,7 +20,6 @@ namespace ArcVera_Tech_Test
         {
             InitializeComponent();
         }
-
         private async void btnImportEra5_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -37,7 +36,6 @@ namespace ArcVera_Tech_Test
                 }
             }
         }
-
         private async Task<DataTable> ReadParquetFileAsync(string filePath)
         {
             using (Stream fileStream = File.OpenRead(filePath))
@@ -114,6 +112,7 @@ namespace ArcVera_Tech_Test
                     DayOfWeek.Sunday))
                 .Select(g => new
                 {
+                    //Group-by u10 values
                     WeekOfYear = g.Key,
                     U10Average = g.Average(row => Convert.ToDouble(row["u10"]))
                 })
@@ -144,19 +143,16 @@ namespace ArcVera_Tech_Test
 
             if (comboBox != null)
             {
-                // Get the selected item.
                 string selectedItem = (string)comboBox.SelectedItem;
                 if (dataTable != null)
                 {
-                    // Perform an action based on the selected item.
                     if (selectedItem == "Daily")
                     {
-                        // Call the function for "Daily".
+                      
                         PlotU10DailyValues(dataTable);
                     }
                     else if (selectedItem == "Weekly")
                     {
-                        // Call the function for "Weekly".
                         PlotU10WeeklyValues(dataTable);
                     }
                 }
@@ -165,83 +161,84 @@ namespace ArcVera_Tech_Test
 
         private void btnExportCsv_Click(object sender, EventArgs e)
         {
-
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            //Check if exists table to export to csv
+            if (dataTable != null)
             {
-                saveFileDialog.Filter = "Csv files (*.csv)|*.csv|All files (*.*)|*.*";
-                saveFileDialog.Title = "Save as Csv File";
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                 {
-                    string filePath = saveFileDialog.FileName;
+                    saveFileDialog.Filter = "Csv files (*.csv)|*.csv|All files (*.*)|*.*";
+                    saveFileDialog.Title = "Save as Csv File";
 
-                    using (StreamWriter writer = new StreamWriter(filePath))
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        // Write column names
-                        for (int i = 0; i < dataTable.Columns.Count; i++)
-                        {
-                            writer.Write(dataTable.Columns[i].ColumnName);
-                            if (i < dataTable.Columns.Count - 1)
-                            {
-                                writer.Write(",");
-                            }
-                        }
-                        writer.WriteLine();
+                        string filePath = saveFileDialog.FileName;
 
-                        // Write rows
-                        foreach (DataRow row in dataTable.Rows)
+                        using (StreamWriter writer = new StreamWriter(filePath))
                         {
                             for (int i = 0; i < dataTable.Columns.Count; i++)
                             {
-                                writer.Write(row[i].ToString());
+                                writer.Write(dataTable.Columns[i].ColumnName);
                                 if (i < dataTable.Columns.Count - 1)
                                 {
                                     writer.Write(",");
                                 }
                             }
                             writer.WriteLine();
+
+                            foreach (DataRow row in dataTable.Rows)
+                            {
+                                for (int i = 0; i < dataTable.Columns.Count; i++)
+                                {
+                                    writer.Write(row[i].ToString());
+                                    if (i < dataTable.Columns.Count - 1)
+                                    {
+                                        writer.Write(",");
+                                    }
+                                }
+                                writer.WriteLine();
+                            }
                         }
                     }
                 }
-            }            
+            }          
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            //Check if exists table to export to excel
+            if (dataTable != null)
             {
-                saveFileDialog.Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
-                saveFileDialog.Title = "Save as Excel File";
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                 {
-                    string filePath = saveFileDialog.FileName;
+                    saveFileDialog.Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
+                    saveFileDialog.Title = "Save as Excel File";
 
-                    int numberOfTables = (int)Math.Ceiling((double)dataTable.Rows.Count / 1000000);
-
-                    for (int i = 0; i < numberOfTables; i++)
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        // Create a new DataTable with a subset of rows
-                        DataTable smallerTable = dataTable.AsEnumerable().Skip(i * 1000000).Take(1000000).CopyToDataTable();
+                        string filePath = saveFileDialog.FileName;
 
-                        // Create a new Excel file for the smaller DataTable
-                        using var workbook = new XLWorkbook();
-                        var worksheet = workbook.Worksheets.Add(smallerTable, "Worksheet");
+                        int numberOfTables = (int)Math.Ceiling((double)dataTable.Rows.Count / 1000000);
 
-                        // Apply conditional formatting to the entire row if the value in the 5th column is negative
-                        var rowCount = worksheet.RowCount();
-                        for (int row = 1; row <= rowCount; row++)
+                        for (int i = 0; i < numberOfTables; i++)
                         {
-                            if (double.TryParse(worksheet.Cell(row, 5).Value.ToString(), out double value) && value < 0)
-                            {
-                                worksheet.Row(row).Style.Fill.BackgroundColor = XLColor.Red;
-                            }
-                        }
+                            // Create a new DataTable with a subset of rows
+                            DataTable smallerTable = dataTable.AsEnumerable().Skip(i * 1000000).Take(1000000).CopyToDataTable();
+                            using var workbook = new XLWorkbook();
+                            var worksheet = workbook.Worksheets.Add(smallerTable, "Worksheet");
 
-                        // Save the Excel file with a unique name
-                        string uniqueFilePath = Path.Combine(Path.GetDirectoryName(filePath),
-                            Path.GetFileNameWithoutExtension(filePath) + (i + 1).ToString() + Path.GetExtension(filePath));
-                        workbook.SaveAs(uniqueFilePath);
+                            // Apply conditional formatting to the entire row if the value in the 5th column is negative
+                            var rowCount = worksheet.RowCount();
+                            for (int row = 1; row <= rowCount; row++)
+                            {
+                                if (double.TryParse(worksheet.Cell(row, 5).Value.ToString(), out double value) && value < 0)
+                                {
+                                    worksheet.Row(row).Style.Fill.BackgroundColor = XLColor.Red;
+                                }
+                            }
+                            string uniqueFilePath = Path.Combine(Path.GetDirectoryName(filePath),
+                                Path.GetFileNameWithoutExtension(filePath) + (i + 1).ToString() + Path.GetExtension(filePath));
+                            workbook.SaveAs(uniqueFilePath);
+                        }
                     }
                 }
             }
