@@ -4,6 +4,7 @@ namespace ArcVera_Tech_Test
     {
         /// <summary>
         ///  The main entry point for the application.
+        ///  Day 3 2024-07-20: finished the main quests, TODO: bonus and if had time optmize the excel export and paint just 5 first columns with red
         ///  Day 2 2024-07-19: created table from parquet and exported data to csv, problems with number rows from excel file
         ///  Day 1 2024-07-18: study parquet and recommended libraries, started to read data from parquet
         /// </summary>
@@ -17,10 +18,11 @@ namespace ArcVera_Tech_Test
             ApplicationConfiguration.Initialize();
             Application.Run(new frmMain());
 
-            Main(new string[0]).GetAwaiter().GetResult(); //check if will work
+            Task task = Execute.ExecuteCodeAsync();
 
-        }
+            // Wait for the task to complete
+            task.Wait();
 
-       
+        }       
     }
 }

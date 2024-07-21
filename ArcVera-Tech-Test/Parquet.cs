@@ -9,16 +9,12 @@ using Apache.Arrow;
 using System.Data;
 using static Microsoft.ML.DataViewSchema;
 using static System.Net.Mime.MediaTypeNames;
-using OfficeOpenXml;
-using System.Collections.Generic;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
-using LargeXlsx;
-using System.Data;
+using ClosedXML;
+using ClosedXML.Excel;
 
-public class Class1
+public class Execute
 {
-    static async Task Main(string[] args)
+    public static async Task ExecuteCodeAsync()
     {
         var options = new ParquetOptions { TreatByteArrayAsString = true };
         Stream fileStream = File.OpenRead("C:/Users/victor.nunes/OneDrive - Techbiz Forense Digital Ltda/Documents/Victor/ArcVeraC#_VictorKennedy/january-era5.parquet");
@@ -79,7 +75,7 @@ public class Class1
             }
         }
 
-        ExportToCsv(table, csvPath);
+        //ExportToCsv(table, csvPath);
         ExportToExcel(table, excelPath);
 
     }
@@ -117,24 +113,9 @@ public class Class1
 
     public static void ExportToExcel(DataTable table, string filePath)
     {
-        using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-        using (var xlsxWriter = new XlsxWriter(fileStream))
-        {
-            // Escreva os nomes das colunas
-            xlsxWriter.BeginRow();
-            for (int i = 0; i < table.Columns.Count; i++)
-            {
-                xlsxWriter.Write(table.Columns[i].ColumnName);
-            }
 
-            // Escreva os dados
-            foreach (DataRow row in table.Rows)
-            {
-                xlsxWriter.BeginRow();
-                for (int i = 0; i < row.ItemArray.Length; i++)
-                {
-                    xlsxWriter.Write(row.ItemArray[i]);
-                }
-            }
-        }
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add(table, "WorksheetName");
+        workbook.SaveAs(filePath);
     }
+}
