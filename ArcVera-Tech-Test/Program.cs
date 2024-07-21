@@ -18,10 +18,10 @@ namespace ArcVera_Tech_Test
             ApplicationConfiguration.Initialize();
             Application.Run(new frmMain());
 
-            Task task = Execute.ExecuteCodeAsync();
+            //Task task = Execute.ExecuteCodeAsync();
 
             // Wait for the task to complete
-            task.Wait();
+            //task.Wait();
 
         }       
     }

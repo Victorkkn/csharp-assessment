@@ -8,6 +8,7 @@ using DataColumn = System.Data.DataColumn;
 using OxyPlot.Axes;
 using SharpCompress.Common;
 using ClosedXML.Excel;
+using System.Globalization;
 
 namespace ArcVera_Tech_Test
 {
@@ -32,7 +33,7 @@ namespace ArcVera_Tech_Test
                     string filePath = openFileDialog.FileName;
                     dataTable = await ReadParquetFileAsync(filePath);
                     dgImportedEra5.DataSource = dataTable;
-                    PlotU10DailyValues(dataTable);
+                    btnFilterDailyWeekly_SelectedOption(sender,e);
                 }
             }
         }
@@ -101,6 +102,67 @@ namespace ArcVera_Tech_Test
             plotView1.Model = plotModel;
         }
 
+        private void PlotU10WeeklyValues(DataTable dataTable)
+        {
+            var plotModel = new PlotModel { Title = "Weekly u10 Values" };
+            var lineSeries = new LineSeries { Title = "u10" };
+
+            var groupedData = dataTable.AsEnumerable()
+                .GroupBy(row => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
+                    DateTime.Parse(row["date"].ToString()),
+                    CalendarWeekRule.FirstDay,
+                    DayOfWeek.Sunday))
+                .Select(g => new
+                {
+                    WeekOfYear = g.Key,
+                    U10Average = g.Average(row => Convert.ToDouble(row["u10"]))
+                })
+                .OrderBy(data => data.WeekOfYear);
+
+            foreach (var data in groupedData)
+            {
+                lineSeries.Points.Add(new DataPoint(data.WeekOfYear, data.U10Average));
+            }
+
+            plotModel.Series.Add(lineSeries);
+            plotView1.Model = plotModel;
+
+        }
+
+        public void btnFilterDailyWeekly_SelectedOption(object sender, EventArgs e)
+        {
+            ComboBox comboBox = null;
+
+            if (sender is ComboBox)
+            {
+                comboBox = (ComboBox)sender;
+            }
+            else
+            {
+                comboBox = btnFilterDailyWeekly;
+            }
+
+            if (comboBox != null)
+            {
+                // Get the selected item.
+                string selectedItem = (string)comboBox.SelectedItem;
+                if (dataTable != null)
+                {
+                    // Perform an action based on the selected item.
+                    if (selectedItem == "Daily")
+                    {
+                        // Call the function for "Daily".
+                        PlotU10DailyValues(dataTable);
+                    }
+                    else if (selectedItem == "Weekly")
+                    {
+                        // Call the function for "Weekly".
+                        PlotU10WeeklyValues(dataTable);
+                    }
+                }
+            }
+        }
+
         private void btnExportCsv_Click(object sender, EventArgs e)
         {
 
@@ -141,8 +203,7 @@ namespace ArcVera_Tech_Test
                         }
                     }
                 }
-            }
-            
+            }            
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)

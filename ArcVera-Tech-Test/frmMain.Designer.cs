@@ -32,6 +32,7 @@
             btnImportEra5 = new Button();
             btnExportCsv = new Button();
             btnExportExcel = new Button();
+            btnFilterDailyWeekly = new ComboBox();
             dgImportedEra5 = new DataGridView();
             plotView1 = new OxyPlot.WindowsForms.PlotView();
             ((System.ComponentModel.ISupportInitialize)dgImportedEra5).BeginInit();
@@ -86,6 +87,18 @@
             plotView1.ZoomHorizontalCursor = Cursors.SizeWE;
             plotView1.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotView1.ZoomVerticalCursor = Cursors.SizeNS;
+            //
+            // comboBox Daily or Weekly
+            //
+            btnFilterDailyWeekly.Location = new Point(600, 549);
+            btnFilterDailyWeekly.Name = "btnFilterDailyWeekly";
+            btnFilterDailyWeekly.Items.Add("Daily");
+            btnFilterDailyWeekly.Items.Add("Weekly");
+            btnFilterDailyWeekly.SelectedItem = "Daily";
+            btnFilterDailyWeekly.Size = new Size(125, 23);
+            btnFilterDailyWeekly.TabIndex = 2;
+            btnFilterDailyWeekly.Text = "Select u10 Daily or Weekly";
+            btnFilterDailyWeekly.SelectedIndexChanged += new EventHandler(btnFilterDailyWeekly_SelectedOption);
             // 
             // frmMain
             // 
@@ -97,10 +110,12 @@
             Controls.Add(btnExportExcel);
             Controls.Add(btnExportCsv);
             Controls.Add(btnImportEra5);
+            Controls.Add(btnFilterDailyWeekly);
             Name = "frmMain";
             Text = "WindSpeed Reader";
             ((System.ComponentModel.ISupportInitialize)dgImportedEra5).EndInit();
             ResumeLayout(false);
+
         }
 
         #endregion
@@ -108,6 +123,7 @@
         private Button btnImportEra5;
         private Button btnExportCsv;
         private Button btnExportExcel;
+        private ComboBox btnFilterDailyWeekly;
         private DataGridView dgImportedEra5;
         private OxyPlot.WindowsForms.PlotView plotView1;
     }
